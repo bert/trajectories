@@ -1,8 +1,12 @@
 /*!
  * \file main.c
+ *
  * \author Bert Timmerman <bert.timmerman@xs4all.nl>
+ *
  * \brief Attempt to calculate some surfcasting related issues.
- * 
+ *
+ * \warning All units are SI: metres, kilograms and seconds.
+ *
  * Problem Statement:\n
  * Given base \c b and height \c h, the length of a special segment on a
  * parabola can be computed as in the following formula:
@@ -11,6 +15,7 @@
  * Following example Fortran code can be found at: \n\n
  * http://www.cs.mtu.edu/~shene/COURSES/cs201/NOTES/chap02/p-length.html
  * as long as it lives there.\n\n
+ *
  * \code
  
 ! -----------------------------------------------------------
@@ -78,14 +83,21 @@ END PROGRAM  ParabolaLength
  * MA 02110-1301, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
-#include <config.h>
+#include <stdlib.h>
+#include <math.h>
+#include <getopt.h>
 
 
+#define VERSION "0.0.1"
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -93,25 +105,80 @@ END PROGRAM  ParabolaLength
 #define RAD_TO_DEG (180.0/M_PI)
 #define TO_RADIANS(degrees) (M180 * (degrees))
 #define GRAVITY 9.81
+#define FALSE 0
+#define TRUE 1
+
+
+/* Me bad for having so much globals. */
+double angle;
+double velocity_0;
+double velocity_0_y;
+double velocity_0_x;
+double time_of_flight;
+double time_to_peak_height;
+double range;
+double peak_height;
+double line_out;
+double kinetic_energy_100g;
+double kinetic_energy_125g;
+double kinetic_energy_150g;
+double kinetic_energy_175g;
+
+
+/*!
+ * \brief Print the usage message to stderr.
+ *
+ * \return \c EXIT_SUCCESS.
+ */
+int
+print_usage ()
+{
+        fprintf (stderr, ("\ntrajectories usage and options:\n"));
+        fprintf (stderr, ("\t --help \n"));
+        fprintf (stderr, ("\t -? \n"));
+        fprintf (stderr, ("\t -h        : print this help message and exit.\n\n"));
+        fprintf (stderr, ("\t --verbose \n"));
+        fprintf (stderr, ("\t -v        : log messages, be verbose.\n\n"));
+        fprintf (stderr, ("\t --silent \n"));
+        fprintf (stderr, ("\t --quiet \n"));
+        fprintf (stderr, ("\t -q        : do not log messages, overrides --verbose.\n\n"));
+        fprintf (stderr, ("\t --version \n"));
+        fprintf (stderr, ("\t -V        : print the version information and exit.\n\n"));
+        fprintf (stderr, ("\t --format <filename> \n"));
+        fprintf (stderr, ("\t -f < filename>\n\n"));
+        fprintf (stderr, ("\t --output <filename> \n"));
+        fprintf (stderr, ("\t -o <filename>\n\n"));
+        fprintf (stderr, ("\t --debug \n"));
+        fprintf (stderr, ("\t -d        : turn on debugging output messages.\n\n"));
+        return (EXIT_SUCCESS);
+}
+
+
+/*!
+ * \brief Print the version to stderr.
+ *
+ * \return \c EXIT_SUCCESS.
+ */
+int
+print_version ()
+{
+        fprintf (stderr, ("\ntrajectories version %s\n"), VERSION);
+        fprintf (stderr, ("(C) 2012 by Bert Timmerman.\n"));
+        fprintf (stderr, ("This free software is released under the GPL v2 license;\n"));
+        fprintf (stderr, ("see the source for copying conditions.\n"));
+        fprintf (stderr, ("There is NO warranty; not even for MERCHANTABILITY\n"));
+        fprintf (stderr, ("or FITNESS FOR A PARTICULAR PURPOSE.\n\n"));
+        return (EXIT_SUCCESS);
+}
 
 
 int
-main (int argc, char *argv[])
+calculate ()
 {
-    double angle;
-    double velocity_0;
-    double casting_weight;
-    double velocity_0_y;
-    double velocity_0_x;
-    double time_of_flight;
-    double time_to_peak_height;
-    double range;
-    double peak_height;
-    double line_out;
     double t;
     double temp;
-    double kinetic_energy;
 
+    /* Do some arithmatic. */
     velocity_0_x = velocity_0 * cos (TO_RADIANS (angle));
     velocity_0_y = velocity_0 * sin (TO_RADIANS (angle));
     peak_height = (velocity_0_y * velocity_0_y) / (2 * GRAVITY);
@@ -121,26 +188,108 @@ main (int argc, char *argv[])
     t = 2 * peak_height;
     temp = sqrt ((t * t) + (range * range));
     line_out =  temp + ((range * range) / t) * log ((t + temp) / range);
-    kinetic_energy = 0.5 * casting_weight * velocity_0 * velocity_0;
+    kinetic_energy_100g = 0.5 * 0.100 * velocity_0 * velocity_0;
+    kinetic_energy_125g = 0.5 * 0.125 * velocity_0 * velocity_0;
+    kinetic_energy_150g = 0.5 * 0.150 * velocity_0 * velocity_0;
+    kinetic_energy_175g = 0.5 * 0.175 * velocity_0 * velocity_0;
+    return (EXIT_SUCCESS);
+}
 
-    fprint (stdout, "*** Calculate trajectories for surfcasting ***\n");
-    fprint (stdout, "\n");
-    fprint (stdout, "Input data.\n");
-    fprint (stdout, "Gravity :                         %f [m/s2]\n", GRAVITY);
-    fprint (stdout, "Casting weight :                  %f [grams]\n", casting_weight);
-    fprint (stdout, "Starting velocity :               %f [m/s]\n", velocity_0);
-    fprint (stdout, "Angle :                           %f [degrees]\n", angle);
-    fprint (stdout, "\n");
-    fprint (stdout, "Output data.\n");
-    fprint (stdout, "Horizontal starting velocity :    %f [m/s]\n", velocity_0_x);
-    fprint (stdout, "Vertical starting velocity :      %f [m/s]\n", velocity_0_y);
-    fprint (stdout, "Peak height :                     %f [m]\n", peak_height);
-    fprint (stdout, "Time to peak height :             %f [s]\n", time_to_peak_height);
-    fprint (stdout, "Range :                           %f [m]\n", range);
-    fprint (stdout, "Total time of flight :            %f [s]\n", time_of_flight);
-    fprint (stdout, "Minimum required line on spool :  %f [m]\n", line_out);
-    fprint (stdout, "Minimum required kinetic energy : %f [Joule]\n", kinetic_energy);
-    fprint (stdout, "\n");
+
+int
+print_report ()
+{
+    /* Now tell us what you found. */
+    fprintf (stdout, "*** Calculate trajectories for surfcasting ***\n");
+    fprintf (stdout, "\n");
+    fprintf (stdout, "Input data.\n");
+    fprintf (stdout, "Gravity :                         %f [m/s2]\n", GRAVITY);
+    fprintf (stdout, "Starting velocity :               %f [m/s]\n", velocity_0);
+    fprintf (stdout, "Angle :                           %f [degrees]\n", angle);
+    fprintf (stdout, "\n");
+    fprintf (stdout, "Output data.\n");
+    fprintf (stdout, "Horizontal starting velocity :    %f [m/s]\n", velocity_0_x);
+    fprintf (stdout, "Vertical starting velocity :      %f [m/s]\n", velocity_0_y);
+    fprintf (stdout, "Peak height :                     %f [m]\n", peak_height);
+    fprintf (stdout, "Time to peak height :             %f [s]\n", time_to_peak_height);
+    fprintf (stdout, "Range :                           %f [m]\n", range);
+    fprintf (stdout, "Total time of flight :            %f [s]\n", time_of_flight);
+    fprintf (stdout, "Minimum required line on spool :  %f [m]\n", line_out);
+    fprintf (stdout, "Minimum required kinetic energy\n");
+    fprintf (stdout, "    for 100 gram :                %f [Joule]\n", kinetic_energy_100g);
+    fprintf (stdout, "    for 125 gram :                %f [Joule]\n", kinetic_energy_125g);
+    fprintf (stdout, "    for 150 gram :                %f [Joule]\n", kinetic_energy_150g);
+    fprintf (stdout, "    for 175 gram :                %f [Joule]\n", kinetic_energy_175g);
+    fprintf (stdout, "\n");
+    return (EXIT_SUCCESS);
+}
+
+
+int
+main (int argc, char *argv[])
+{
+    int debug;
+    int silent;
+    int verbose;
+    /* Determine how we are called today */
+    char *program_name = NULL;
+    program_name = argv[0];
+    static const struct option opts[] =
+    {
+        {"debug", no_argument, NULL, 'd'},
+        {"help", no_argument, NULL, 'h'},
+        {"version", no_argument, NULL, 'V'},
+        {"verbose", no_argument, NULL, 'v'},
+        {"quiet", no_argument, NULL, 'q'},
+        {"silent", no_argument, NULL, 'q'},
+        {"format", required_argument, NULL, 'f'},
+        {"output", required_argument, NULL, 'o'},
+        {0, 0, 0, 0}
+    };
+    int optc;
+    while ((optc = getopt_long (argc, argv, "dhVvqqf:o:", opts, NULL)) != -1)
+    {
+        switch (optc)
+        {
+            case 'd':
+                debug = TRUE;
+                break;
+            case 'h':
+                print_usage ();
+                exit (EXIT_SUCCESS);
+            case 'V':
+                print_version ();
+                exit (EXIT_SUCCESS);
+            case 'v':
+                verbose = TRUE;
+                break;
+            case 'q':
+                silent = TRUE;
+                verbose = FALSE; /* Just to be sure. */
+                break;
+            case 'f':
+                break;
+            case 'o':
+                break;
+            case '?':
+                print_usage ();
+                exit (EXIT_FAILURE);
+            default:
+                fprintf (stderr, "unknown command line option encountered.\n");
+                print_usage ();
+                exit (EXIT_FAILURE);
+        }
+    }
+    if (optind < argc)
+    {
+                print_usage ();
+                exit (EXIT_FAILURE);
+        }
+    angle = 45.;
+    velocity_0 = 50.;
+    calculate ();
+    print_report ();
+    exit (EXIT_SUCCESS);
 }
 
 
