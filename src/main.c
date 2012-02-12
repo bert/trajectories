@@ -110,19 +110,40 @@ END PROGRAM  ParabolaLength
 
 
 /* Me bad for having so much globals. */
-double angle;
-double velocity_0;
-double velocity_0_y;
+float angle;
+        /*!< inclination with the horizontal plane.*/
+float velocity_0;
+        /*!< velocity at start of the trajectory (at this moment all the
+         * stored energy in the rod is released).*/
 double velocity_0_x;
+        /*!< horizontal componnt of start velocity.*/
+double velocity_0_y;
+        /*!< vertical componnt of start velocity.*/
 double time_of_flight;
+        /*!< time of flight.*/
 double time_to_peak_height;
+        /*!< time to reach the highest elevation.*/
 double range;
+        /*!< range.*/
 double peak_height;
+        /*!< highest elevation reached.*/
 double line_out;
+        /*!< the length of the trajectory.*/
 double kinetic_energy_100g;
+        /*!< minimum required kinetic energy at start for a 100 grams
+         * weight.*/
 double kinetic_energy_125g;
+        /*!< minimum required kinetic energy at start for a 123 grams
+         * weight.*/
 double kinetic_energy_150g;
+        /*!< minimum required kinetic energy at start for a 150 grams
+         * weight.*/
 double kinetic_energy_175g;
+        /*!< minimum required kinetic energy at start for a 175 grams
+         * weight.*/
+double kinetic_energy_200g;
+        /*!< minimum required kinetic energy at start for a 200 grams
+         * weight.*/
 
 
 /*!
@@ -136,18 +157,20 @@ print_usage ()
         fprintf (stderr, ("\ntrajectories usage and options:\n"));
         fprintf (stderr, ("\t --help \n"));
         fprintf (stderr, ("\t -? \n"));
-        fprintf (stderr, ("\t -h        : print this help message and exit.\n\n"));
+        fprintf (stderr, ("\t -h             : print this help message and exit.\n\n"));
         fprintf (stderr, ("\t --verbose \n"));
-        fprintf (stderr, ("\t -v        : log messages, be verbose.\n\n"));
+        fprintf (stderr, ("\t -v             : log messages, be verbose.\n\n"));
         fprintf (stderr, ("\t --silent \n"));
         fprintf (stderr, ("\t --quiet \n"));
-        fprintf (stderr, ("\t -q        : do not log messages, overrides --verbose.\n\n"));
+        fprintf (stderr, ("\t -q             : do not log messages, overrides --verbose.\n\n"));
         fprintf (stderr, ("\t --version \n"));
-        fprintf (stderr, ("\t -V        : print the version information and exit.\n\n"));
-        fprintf (stderr, ("\t --format <filename> \n"));
-        fprintf (stderr, ("\t -f < filename>\n\n"));
+        fprintf (stderr, ("\t -V             : print the version information and exit.\n\n"));
+        fprintf (stderr, ("\t --format <filetype> \n"));
+        fprintf (stderr, ("\t -f < filetype> : output format, default is ASCII.\n\n"));
+        fprintf (stderr, ("\t --input <filename> \n"));
+        fprintf (stderr, ("\t -i <filename>\n\n"));
         fprintf (stderr, ("\t --output <filename> \n"));
-        fprintf (stderr, ("\t -o <filename>\n\n"));
+        fprintf (stderr, ("\t -o <filename>  : default is STDOUT.\n\n"));
         fprintf (stderr, ("\t --debug \n"));
         fprintf (stderr, ("\t -d        : turn on debugging output messages.\n\n"));
         return (EXIT_SUCCESS);
@@ -179,8 +202,8 @@ calculate ()
     double temp;
 
     /* Do some arithmatic. */
-    velocity_0_x = velocity_0 * cos (TO_RADIANS (angle));
-    velocity_0_y = velocity_0 * sin (TO_RADIANS (angle));
+    velocity_0_x = (double) velocity_0 * cos (TO_RADIANS ((double) angle));
+    velocity_0_y = (double) velocity_0 * sin (TO_RADIANS ((double) angle));
     peak_height = (velocity_0_y * velocity_0_y) / (2 * GRAVITY);
     time_to_peak_height = velocity_0_y / GRAVITY;
     range = (2 * velocity_0_x * velocity_0_y) / GRAVITY;
@@ -192,6 +215,7 @@ calculate ()
     kinetic_energy_125g = 0.5 * 0.125 * velocity_0 * velocity_0;
     kinetic_energy_150g = 0.5 * 0.150 * velocity_0 * velocity_0;
     kinetic_energy_175g = 0.5 * 0.175 * velocity_0 * velocity_0;
+    kinetic_energy_200g = 0.5 * 0.200 * velocity_0 * velocity_0;
     return (EXIT_SUCCESS);
 }
 
@@ -202,24 +226,46 @@ print_report ()
     /* Now tell us what you found. */
     fprintf (stdout, "*** Calculate trajectories for surfcasting ***\n");
     fprintf (stdout, "\n");
-    fprintf (stdout, "Input data.\n");
-    fprintf (stdout, "Gravity :                         %f [m/s2]\n", GRAVITY);
-    fprintf (stdout, "Starting velocity :               %f [m/s]\n", velocity_0);
-    fprintf (stdout, "Angle :                           %f [degrees]\n", angle);
+    fprintf (stdout, "** Input data. **\n");
     fprintf (stdout, "\n");
-    fprintf (stdout, "Output data.\n");
-    fprintf (stdout, "Horizontal starting velocity :    %f [m/s]\n", velocity_0_x);
-    fprintf (stdout, "Vertical starting velocity :      %f [m/s]\n", velocity_0_y);
-    fprintf (stdout, "Peak height :                     %f [m]\n", peak_height);
-    fprintf (stdout, "Time to peak height :             %f [s]\n", time_to_peak_height);
-    fprintf (stdout, "Range :                           %f [m]\n", range);
-    fprintf (stdout, "Total time of flight :            %f [s]\n", time_of_flight);
-    fprintf (stdout, "Minimum required line on spool :  %f [m]\n", line_out);
+    fprintf (stdout, "Gravity :                         %f [m/s2]\n",
+        GRAVITY);
+    fprintf (stdout, "Starting velocity :               %f [m/s]\n",
+        velocity_0);
+    fprintf (stdout, "Angle :                           %f [degrees]\n",
+        angle);
+    fprintf (stdout, "\n");
+    fprintf (stdout, "\n");
+    fprintf (stdout, "** Output data. **\n");
+    fprintf (stdout, "\n");
+    fprintf (stdout, "WARNING: wind, friction and drag effects are excluded.\n");
+    fprintf (stdout, "\n");
+    fprintf (stdout, "Horizontal starting velocity :    %f [m/s]\n",
+        velocity_0_x);
+    fprintf (stdout, "Vertical starting velocity :      %f [m/s]\n",
+        velocity_0_y);
+    fprintf (stdout, "Peak height :                     %f [m]\n",
+        peak_height);
+    fprintf (stdout, "Time to peak height :             %f [s]\n",
+        time_to_peak_height);
+    fprintf (stdout, "Range :                           %f [m]\n",
+        range);
+    fprintf (stdout, "Total time of flight :            %f [s]\n",
+        time_of_flight);
+    fprintf (stdout, "\n");
+    fprintf (stdout, "Minimum required line on spool :  %f [m]\n",
+        line_out);
     fprintf (stdout, "Minimum required kinetic energy\n");
-    fprintf (stdout, "    for 100 gram :                %f [Joule]\n", kinetic_energy_100g);
-    fprintf (stdout, "    for 125 gram :                %f [Joule]\n", kinetic_energy_125g);
-    fprintf (stdout, "    for 150 gram :                %f [Joule]\n", kinetic_energy_150g);
-    fprintf (stdout, "    for 175 gram :                %f [Joule]\n", kinetic_energy_175g);
+    fprintf (stdout, "    for 100 gram :                %f [Joule]\n",
+        kinetic_energy_100g);
+    fprintf (stdout, "    for 125 gram :                %f [Joule]\n",
+        kinetic_energy_125g);
+    fprintf (stdout, "    for 150 gram :                %f [Joule]\n",
+        kinetic_energy_150g);
+    fprintf (stdout, "    for 175 gram :                %f [Joule]\n",
+        kinetic_energy_175g);
+    fprintf (stdout, "    for 200 gram :                %f [Joule]\n",
+        kinetic_energy_200g);
     fprintf (stdout, "\n");
     return (EXIT_SUCCESS);
 }
@@ -231,6 +277,9 @@ main (int argc, char *argv[])
     int debug;
     int silent;
     int verbose;
+    char *format_filetype;
+    char *input_filename;
+    char *output_filename;
     /* Determine how we are called today */
     char *program_name = NULL;
     program_name = argv[0];
@@ -243,11 +292,12 @@ main (int argc, char *argv[])
         {"quiet", no_argument, NULL, 'q'},
         {"silent", no_argument, NULL, 'q'},
         {"format", required_argument, NULL, 'f'},
+        {"input", required_argument, NULL, 'i'},
         {"output", required_argument, NULL, 'o'},
         {0, 0, 0, 0}
     };
     int optc;
-    while ((optc = getopt_long (argc, argv, "dhVvqqf:o:", opts, NULL)) != -1)
+    while ((optc = getopt_long (argc, argv, "dhVvqqf:i:o:", opts, NULL)) != -1)
     {
         switch (optc)
         {
@@ -268,8 +318,28 @@ main (int argc, char *argv[])
                 verbose = FALSE; /* Just to be sure. */
                 break;
             case 'f':
+                format_filetype = strdup (optarg);
+                if (debug)
+                {
+                    fprintf (stderr, "format filetype = %s\n",
+                        format_filetype);
+                }
+                break;
+            case 'i':
+                input_filename = strdup (optarg);
+                if (debug)
+                {
+                    fprintf (stderr, "input filename = %s\n",
+                        input_filename);
+                }
                 break;
             case 'o':
+                output_filename = strdup (optarg);
+                if (debug)
+                {
+                    fprintf (stderr, "output filename = %s\n",
+                        output_filename);
+                }
                 break;
             case '?':
                 print_usage ();
@@ -285,8 +355,20 @@ main (int argc, char *argv[])
                 print_usage ();
                 exit (EXIT_FAILURE);
         }
-    angle = 45.;
-    velocity_0 = 50.;
+    fprintf (stdout, "Give an angle in degrees : ");
+    fscanf (stdin, "%f", &angle);
+    fprintf (stdout, "\n");
+    if (angle == 0)
+    {
+        angle = 45.0;
+    }
+    fprintf (stdout, "Give a velocity in m/s : ");
+    fscanf (stdin, "%f", &velocity_0);
+    fprintf (stdout, "\n");
+    if (velocity_0 == 0.0)
+    {
+        velocity_0 = 50.0;
+    }
     calculate ();
     print_report ();
     exit (EXIT_SUCCESS);
