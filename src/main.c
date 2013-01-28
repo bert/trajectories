@@ -16,7 +16,7 @@
  * http://www.cs.mtu.edu/~shene/COURSES/cs201/NOTES/chap02/p-length.html
  * as long as it lives there.\n\n
  *
- * \code
+\code
  
 ! -----------------------------------------------------------
 !   Calculate the length of a parabola given height and base.
@@ -144,7 +144,18 @@ double kinetic_energy_175g;
 double kinetic_energy_200g;
         /*!< minimum required kinetic energy at start for a 200 grams
          * weight.*/
+double angular_acceleration;
+        /*!< angular acceleration needed to reach starting velocity.*/
+char *casting_style;
+        /*!< everybody has a favourite one.*/
 
+#define STYLE_OVERHEAD_THUMP 0
+#define STYLE_BRIGHTON 1
+#define STYLE_BACK_CAST 2
+#define STYLE_OFF_THE_GROUND 3
+#define STYLE_SOUTH_AFRICAN 4
+#define STYLE_LOW_PENDULUM 5
+#define STYLE_HIGH_PENDULUM 6
 
 /*!
  * \brief Print the usage message to stderr.
@@ -173,6 +184,8 @@ print_usage ()
         fprintf (stderr, ("\t -o <filename>  : default is STDOUT.\n\n"));
         fprintf (stderr, ("\t --debug \n"));
         fprintf (stderr, ("\t -d        : turn on debugging output messages.\n\n"));
+        fprintf (stderr, ("\t --imperial \n"));
+        fprintf (stderr, ("\t -z        : turn on imperial output.\n\n"));
         return (EXIT_SUCCESS);
 }
 
@@ -209,8 +222,8 @@ calculate ()
     range = (2 * velocity_0_x * velocity_0_y) / GRAVITY;
     time_of_flight = (2 * velocity_0_y) / GRAVITY;
     t = 2 * peak_height;
-    temp = sqrt ((t * t) + (range * range));
-    line_out =  temp + ((range * range) / t) * log ((t + temp) / range);
+    temp = sqrt ((4 * (peak_height * peak_height)) + (range * range));
+    line_out =  temp + (((range * range) / (2 * peak_height)) * log ((peak_height + temp) / range));
     kinetic_energy_100g = 0.5 * 0.100 * velocity_0 * velocity_0;
     kinetic_energy_125g = 0.5 * 0.125 * velocity_0 * velocity_0;
     kinetic_energy_150g = 0.5 * 0.150 * velocity_0 * velocity_0;
@@ -277,6 +290,7 @@ main (int argc, char *argv[])
     int debug;
     int silent;
     int verbose;
+    int imperial;
     char *format_filetype;
     char *input_filename;
     char *output_filename;
@@ -294,10 +308,12 @@ main (int argc, char *argv[])
         {"format", required_argument, NULL, 'f'},
         {"input", required_argument, NULL, 'i'},
         {"output", required_argument, NULL, 'o'},
+        {"imperial", required_argument, NULL, 'z'},
         {0, 0, 0, 0}
     };
     int optc;
-    while ((optc = getopt_long (argc, argv, "dhVvqqf:i:o:", opts, NULL)) != -1)
+    imperial = FALSE;
+    while ((optc = getopt_long (argc, argv, "dhVvqqzf:i:o:", opts, NULL)) != -1)
     {
         switch (optc)
         {
@@ -317,6 +333,8 @@ main (int argc, char *argv[])
                 silent = TRUE;
                 verbose = FALSE; /* Just to be sure. */
                 break;
+            case 'z':
+                imperial = TRUE;
             case 'f':
                 format_filetype = strdup (optarg);
                 if (debug)
@@ -364,6 +382,13 @@ main (int argc, char *argv[])
     }
     fprintf (stdout, "Give a velocity in m/s : ");
     fscanf (stdin, "%f", &velocity_0);
+    fprintf (stdout, "\n");
+    if (velocity_0 == 0.0)
+    {
+        velocity_0 = 50.0;
+    }
+    fprintf (stdout, "Give a casting style : ");
+    fscanf (stdin, "%s", casting_style);
     fprintf (stdout, "\n");
     if (velocity_0 == 0.0)
     {
