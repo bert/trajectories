@@ -7,80 +7,24 @@
  *
  * \warning All units are SI: metres, kilograms and seconds.
  *
- * Problem Statement:\n
- * Given base \c b and height \c h, the length of a special segment on a
- * parabola can be computed as in the following formula:
- * \image html ../doc/p_length.jpg
+ * It is assumed that the sinker follows a trajectory similar to a parabola.\n
+ * Given the base (\c range ) and the height (\c peak_height ), the length
+ * (\c line_out ) of a special segment on a  parabola can be computed as in the
+ * following formula:\n
+ * \image html ../doc/p-length.jpg
  * \n
- * Following example Fortran code can be found at: \n\n
- * http://www.cs.mtu.edu/~shene/COURSES/cs201/NOTES/chap02/p-length.html
- * as long as it lives there.\n\n
- *
-\code
- 
-! -----------------------------------------------------------
-!   Calculate the length of a parabola given height and base.
-! -----------------------------------------------------------
-
-PROGRAM  ParabolaLength
-IMPLICIT  NONE
- 
-REAL  :: Height, Base, Length
-REAL  :: temp, t
- 
-WRITE(*,*)  'Height of a parabola : '
-READ(*,*)   Height
- 
-WRITE(*,*)  'Base of a parabola   : '
-READ(*,*)   Base
- 
-! ... temp and t are two temporary variables
- 
-t      = 2.0 * Height
-temp   = SQRT(t**2 + Base**2)
-Length = temp + Base**2/t*LOG((t + temp)/Base)
- 
-WRITE(*,*)
-WRITE(*,*)  'Height = ', Height
-WRITE(*,*)  'Base   = ', Base
-WRITE(*,*)  'Length = ', Length
- 
-END PROGRAM  ParabolaLength
- 
-\endcode
- * 
- * Discussion of above Fortran code:\n
- * The values of base and height will be stored in REAL variables
- * \c Base and \c Height, respectively.\n
- * \c Length will be used to store the parabola segment length.\n
- * Since the content in the square root is used twice, it would be
- * more convenient to save the result in a variable.\n
- * This value will be stored in \c temp.\n
- * Since \c 2h also appears a few times, variable \c t is used to store
- * this value.\n
- * After reading in \c Height and \c Base, 2.0 * Height is computed and
- * stored in \c t with the first assignment.\n
- * Then, the second assignment computes the content in the square
- * root and stores the result into \c temp.\n
- * The third assignment compute the segment length and stores the
- * result into \c Length. \n
- * Note that intrinsic function \c LOG() is used.\n
- * The four WRITE statements display the input and the results. \n
- * \n
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *      
+ * <hr>
+ * <h1>Copyright Notice</h1>
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *   
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n
+ * See the GNU General Public License for more details.\n
+ * \n
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
- * MA 02110-1301, USA.
+ * MA 02110-1301, USA.\n
+ * <hr>
  */
 
 #ifdef HAVE_CONFIG_H
