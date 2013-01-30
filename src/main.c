@@ -48,7 +48,8 @@
 #define M180 (M_PI/180.0)
 #define RAD_TO_DEG (180.0/M_PI)
 #define TO_RADIANS(degrees) (M180 * (degrees))
-#define GRAVITY 9.81
+#define GRAVITY 9.81 /* [m/s2] */
+#define FPM 0.3048 /* [ft/m] */
 #define FALSE 0
 #define TRUE 1
 
@@ -229,6 +230,46 @@ print_report ()
 
 
 int
+print_imperial_report ()
+{
+    /* Now tell the imperial users what you found. */
+    fprintf (stdout, "*** Calculate trajectories for surfcasting ***\n");
+    fprintf (stdout, "\n");
+    fprintf (stdout, "** Input data. **\n");
+    fprintf (stdout, "\n");
+    fprintf (stdout, "Gravity :                         %f [ft/s2]\n",
+        GRAVITY / FPM / FPM);
+    fprintf (stdout, "Starting velocity :               %f [ft/s]\n",
+        velocity_0 / FPM);
+    fprintf (stdout, "Angle :                           %f [degrees]\n",
+        angle);
+    fprintf (stdout, "\n");
+    fprintf (stdout, "\n");
+    fprintf (stdout, "** Output data. **\n");
+    fprintf (stdout, "\n");
+    fprintf (stdout, "WARNING: wind, friction and drag effects are excluded.\n");
+    fprintf (stdout, "\n");
+    fprintf (stdout, "Horizontal starting velocity :    %f [ft/s]\n",
+        velocity_0_x / FPM);
+    fprintf (stdout, "Vertical starting velocity :      %f [ft/s]\n",
+        velocity_0_y / FPM);
+    fprintf (stdout, "Peak height :                     %f [ft]\n",
+        peak_height / FPM);
+    fprintf (stdout, "Time to peak height :             %f [s]\n",
+        time_to_peak_height);
+    fprintf (stdout, "Range :                           %f [ft]\n",
+        range / FPM);
+    fprintf (stdout, "Total time of flight :            %f [s]\n",
+        time_of_flight);
+    fprintf (stdout, "\n");
+    fprintf (stdout, "Minimum required line on spool :  %f [ft]\n",
+        line_out / FPM);
+    fprintf (stdout, "\n");
+    return (EXIT_SUCCESS);
+}
+
+
+int
 main (int argc, char *argv[])
 {
     int debug;
@@ -249,10 +290,10 @@ main (int argc, char *argv[])
         {"verbose", no_argument, NULL, 'v'},
         {"quiet", no_argument, NULL, 'q'},
         {"silent", no_argument, NULL, 'q'},
+        {"imperial", no_argument, NULL, 'z'},
         {"format", required_argument, NULL, 'f'},
         {"input", required_argument, NULL, 'i'},
         {"output", required_argument, NULL, 'o'},
-        {"imperial", required_argument, NULL, 'z'},
         {0, 0, 0, 0}
     };
     int optc;
@@ -279,6 +320,7 @@ main (int argc, char *argv[])
                 break;
             case 'z':
                 imperial = TRUE;
+                break;
             case 'f':
                 format_filetype = strdup (optarg);
                 if (debug)
@@ -324,13 +366,31 @@ main (int argc, char *argv[])
     {
         angle = 45.0;
     }
-    fprintf (stdout, "Give a velocity in m/s : ");
-    fscanf (stdin, "%f", &velocity_0);
-    fprintf (stdout, "\n");
+    if (imperial)
+    {
+        fprintf (stdout, "Give a velocity in ft/s : ");
+        fscanf (stdin, "%f", &velocity_0);
+        velocity_0 = velocity_0 * FPM;
+        fprintf (stdout, "\n");
+    }
+    else
+    {
+        fprintf (stdout, "Give a velocity in m/s : ");
+        fscanf (stdin, "%f", &velocity_0);
+        fprintf (stdout, "\n");
+    }
     if (velocity_0 == 0.0)
     {
         velocity_0 = 50.0;
     }
+    fprintf (stdout, "Choice of casting styles : \n");
+    fprintf (stdout, "  0 = Overhead thump\n");
+    fprintf (stdout, "  1 = Brighton\n");
+    fprintf (stdout, "  2 = Back cast\n");
+    fprintf (stdout, "  3 = Off The Ground\n");
+    fprintf (stdout, "  4 = South African\n");
+    fprintf (stdout, "  5 = Low pendulum\n");
+    fprintf (stdout, "  6 = High pendulum\n");
     fprintf (stdout, "Give a casting style : ");
     fscanf (stdin, "%s", casting_style);
     fprintf (stdout, "\n");
@@ -339,7 +399,14 @@ main (int argc, char *argv[])
         velocity_0 = 50.0;
     }
     calculate ();
-    print_report ();
+    if (imperial)
+    {
+        print_imperial_report ();
+    }
+    else
+    {
+        print_report ();
+    }
     exit (EXIT_SUCCESS);
 }
 
