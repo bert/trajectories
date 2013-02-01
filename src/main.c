@@ -61,9 +61,9 @@ float velocity_0;
         /*!< velocity at start of the trajectory (at this moment all the
          * stored energy in the rod is released).*/
 double velocity_0_x;
-        /*!< horizontal componnt of start velocity.*/
+        /*!< horizontal component of start velocity.*/
 double velocity_0_y;
-        /*!< vertical componnt of start velocity.*/
+        /*!< vertical component of start velocity.*/
 double time_of_flight;
         /*!< time of flight.*/
 double time_to_peak_height;
@@ -93,6 +93,12 @@ double angular_acceleration;
         /*!< angular acceleration needed to reach starting velocity.*/
 char *casting_style;
         /*!< everybody has a favourite one.*/
+double wind_velocity_x;
+        /*!< horizontal component of wind velocity.*/
+double wind_velocity_y;
+        /*!< vertical component of wind velocity.*/
+int wind_direction;
+        /*!< wind direction divided in 30 degrees segments (like clock hours).*/
 
 #define STYLE_OVERHEAD_THUMP 0
 #define STYLE_BRIGHTON 1
@@ -383,6 +389,10 @@ main (int argc, char *argv[])
     {
         velocity_0 = 50.0;
     }
+
+/*! \todo Implement Casting style. */
+
+/*
     fprintf (stdout, "Choice of casting styles : \n");
     fprintf (stdout, "  0 = Overhead thump\n");
     fprintf (stdout, "  1 = Brighton\n");
@@ -394,6 +404,7 @@ main (int argc, char *argv[])
     fprintf (stdout, "Give a casting style : ");
     fscanf (stdin, "%s", casting_style);
     fprintf (stdout, "\n");
+*/
     if (velocity_0 == 0.0)
     {
         velocity_0 = 50.0;
