@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <getopt.h>
+#include <gtk/gtk.h>
 
 
 #define VERSION "0.0.1"
@@ -50,8 +51,8 @@
 #define TO_RADIANS(degrees) (M180 * (degrees))
 #define GRAVITY 9.81 /* [m/s2] */
 #define FPM 0.3048 /* [ft/m] */
-#define FALSE 0
-#define TRUE 1
+#define WIDTH  640
+#define HEIGHT 480
 
 
 /* Me bad for having so much globals. */
@@ -272,6 +273,53 @@ print_imperial_report ()
         line_out / FPM);
     fprintf (stdout, "\n");
     return (EXIT_SUCCESS);
+}
+
+
+static gboolean
+cb_draw
+(
+    GtkWidget *w,
+    GdkEventExpose *e
+)
+{
+    cairo_t *cr = gdk_cairo_create (e->window);
+    cairo_set_source_rgb (cr, 1.0, 1.0, 0.0);
+    cairo_paint (cr);
+    cairo_destroy (cr);
+
+    return TRUE;
+}
+
+
+int
+create_window
+(
+    int argc,
+    char **argv)
+{
+    GtkWidget *window;
+    GtkWidget *align;
+    GtkWidget *area;
+
+    gtk_init (&argc, &argv);
+
+    window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    g_signal_connect (window, "destroy", gtk_main_quit, NULL);
+
+    align = gtk_alignment_new (0.5, 0.5, 0, 0);
+    gtk_container_add (GTK_CONTAINER (window), align);
+
+    area = gtk_drawing_area_new ();
+    gtk_widget_set_size_request (area, WIDTH, HEIGHT);
+    g_signal_connect (area, "expose-event", G_CALLBACK (cb_draw), NULL);
+    gtk_container_add (GTK_CONTAINER (align), area);
+
+    gtk_widget_show_all (window);
+
+    gtk_main ();
+
+    return 0;
 }
 
 

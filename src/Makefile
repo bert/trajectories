@@ -1,5 +1,5 @@
-CFLAGS = -Wall
-LDFLAGS = -lm
+CFLAGS = -Wall -g `pkg-config --cflags gtk+-2.0`
+LDFLAGS = -lm `pkg-config --libs gtk+-2.0`
 
 all: \
         trajectories
